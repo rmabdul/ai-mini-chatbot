@@ -19,22 +19,30 @@ export const useChatAI = () => {
     setLoading(true)
 
     try {
-      const res = await mockAiApi(trimmed)
-
-      if (res.status === "SUCCESS" && res.result) {
+        const res = await mockAiApi(trimmed)
+      
+        if (res.status !== "SUCCESS" || !res.result) {
+          setError(res.errorMessage ?? "AI service failed")
+          return
+        }
+      
+        const { reply, confidence, disclaimer } = res.result
+      
         setMessages((prev) => [
           ...prev,
           {
             role: "ai",
-            text: res.result.reply,
-            confidence: res.result.confidence,
-            disclaimer: res.result.disclaimer
+            text: reply,
+            confidence,
+            disclaimer
           }
         ])
-      } else {
-        setError(res.errorMessage ?? "Something went wrong")
+      } catch {
+        setError("Network error. Try again.")
+      } finally {
+        setLoading(false)
       }
-    } catch {
+      catch {
       setError("Network error. Try again.")
     } finally {
       setLoading(false)
